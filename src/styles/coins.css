@@ -76,36 +76,6 @@
 .search-input::placeholder { color: rgba(255,255,255,0.35); }
 .search-input:focus { border-color: var(--sky-3); }
 
-.coins-wallet-hint {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 6px 12px 0;
-  padding: 8px 10px;
-  background: rgba(202, 255, 77, 0.08);
-  border: 2px dashed rgba(202, 255, 77, 0.35);
-  border-radius: 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.75);
-}
-.coins-wallet-hint b { color: var(--lime); font-weight: 700; }
-.coins-wallet-hint > span:first-child { font-size: 16px; flex-shrink: 0; }
-.coins-wallet-hint > span:nth-child(2) { flex: 1; }
-#coinsWalletHintBtn {
-  padding: 5px 10px;
-  background: var(--lime);
-  color: var(--ink);
-  border: 2px solid var(--ink);
-  border-radius: 6px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 10px;
-  letter-spacing: 1px;
-  box-shadow: 0 2px 0 var(--ink);
-  cursor: pointer;
-  flex-shrink: 0;
-}
 .coin-list { padding: 8px 10px 100px; background: var(--ink); }
 .coin-card {
   background: var(--cream); color: var(--ink);
