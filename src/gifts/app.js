@@ -776,9 +776,11 @@ function doSnipe(idx){
   // Persist progress to the connected wallet's profile (or in-memory if guest)
   PROFILE.incrementSnipes();
   PROFILE.addXp(50);
-  // Update the topbar level badge in case the user just leveled up
-  const lvlBadge = document.querySelector('.user-pill .lvl-badge');
-  if (lvlBadge) lvlBadge.textContent = String(PROFILE.level);
+  // Update the topbar level badge in case the user just leveled up.
+  // v0.3: both gifts and coins headers may have a .user-pill.
+  document.querySelectorAll('.user-pill .lvl-badge').forEach(b => {
+    b.textContent = String(PROFILE.level);
+  });
 }
 
 function fireConfetti(){
@@ -1099,9 +1101,11 @@ function claimDaily(){
   PROFILE.markClaimed();
   toast(`+50 XP claimed · streak ${PROFILE.streakDays} 🔥`);
 
-  // Update topbar level badge in case the claim leveled the user up
-  const lvlBadge = document.querySelector('.user-pill .lvl-badge');
-  if (lvlBadge) lvlBadge.textContent = String(PROFILE.level);
+  // Update topbar level badge in case the claim leveled the user up.
+  // v0.3: both gifts and coins headers may have a .user-pill.
+  document.querySelectorAll('.user-pill .lvl-badge').forEach(b => {
+    b.textContent = String(PROFILE.level);
+  });
 
   // Animate the button briefly
   const btn = document.getElementById('dailyClaimBtn');
@@ -1291,16 +1295,17 @@ const TC = (() => {
     // wallets connecting on the same phone get different profiles.
     PROFILE.loadFor(friendlyAddr);
 
-    // Update topbar pill atomically — show this wallet's REAL level, not a hardcoded 7
-    const pill = document.querySelector('.user-pill');
-    if (pill) {
+    // Update topbar pill atomically — show this wallet's REAL level, not a hardcoded 7.
+    // v0.3: there are now TWO .user-pill elements (gifts header + coins header).
+    // Update both so the wallet identity is mirrored across tabs.
+    document.querySelectorAll('.user-pill').forEach(pill => {
       const lvl = document.createElement('span');
       lvl.className = 'lvl-badge';
       lvl.textContent = String(PROFILE.level);
       const lbl = document.createElement('span');
       lbl.textContent = WALLET.shortAddress();
       pill.replaceChildren(lvl, lbl);
-    }
+    });
 
     // Friendly toast naming the wallet that connected
     const walletName = wallet.device?.appName || 'wallet';
@@ -1425,6 +1430,18 @@ window.GS_BRIDGE = Object.freeze({
   openWallet: () => TC.safeOpenModal(),
 });
 
+// ----------------------------------------------------------------------------
+// v0.3 BUGFIX: inline onclick="..." attributes in gifts/body.html and in
+// HTML-string innerHTML calls reference module-scoped functions. Vite wraps
+// modules in IIFEs, so those references can't find the functions. Manually
+// promote the handlers that inline HTML expects.
+//
+// In v0.2 (single <script> tag), these were automatic globals. Migrating to
+// ES modules broke that contract and the CONNECT button silently no-ops.
+// ----------------------------------------------------------------------------
+window.handlePillClick = handlePillClick;
+window.shareRef = shareRef;
+
 // ============================================================================
 //  IDLE TIMEOUT (HI6 fix)
 //  Auto-disconnect the wallet after 15 min of no user interaction. Prevents
@@ -1462,13 +1479,13 @@ function forceDisconnect(reason){
   walletConnected = false;
   if (_idleTimer) { clearTimeout(_idleTimer); _idleTimer = null; }
 
-  // Reset pill atomically — no level badge in disconnected state, just CONNECT
-  const pill = document.querySelector('.user-pill');
-  if (pill) {
+  // Reset pill atomically — no level badge in disconnected state, just CONNECT.
+  // v0.3: update both gifts and coins header pills.
+  document.querySelectorAll('.user-pill').forEach(pill => {
     const lbl = document.createElement('span');
     lbl.textContent = 'CONNECT';
     pill.replaceChildren(lbl);
-  }
+  });
 
   let msg = '🔓 wallet disconnected';
   if (reason === 'idle') msg = '⏱️ session timed out — reconnect to continue';
