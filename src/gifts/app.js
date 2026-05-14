@@ -1132,9 +1132,12 @@ function initDailyClaimButton(){
 
 // Pill click router: connect if not connected, profile if connected
 function handlePillClick(){
+  console.log('[DEBUG] handlePillClick called, walletConnected =', walletConnected);
   if (!walletConnected) {
-    triggerWalletConnect();
+    console.log('[DEBUG] calling triggerWalletConnect');
+    triggerWalletConnect().catch(e => console.error('[DEBUG] triggerWalletConnect threw:', e));
   } else {
+    console.log('[DEBUG] going to profile');
     goToProfile();
   }
 }
@@ -1224,16 +1227,17 @@ const TC = (() => {
   let _statusUnsub = null;   // unsubscribe fn for onStatusChange
 
   function _initIfNeeded(){
+    console.log('[DEBUG] _initIfNeeded called, _ready =', _ready);
     if (_ready) return Promise.resolve();
     if (_readyPromise) return _readyPromise;
 
     _readyPromise = new Promise((resolve, reject) => {
       try {
-        // Manifest URL: same origin, /tonconnect-manifest.json.
-        // CRITICAL: don't accept manifest URL from any other source.
-        // In Codespaces / preview environments, this resolves to the
-        // forwarded HTTPS URL, which is exactly what TON Connect needs.
         const manifestUrl = `${window.location.origin}/tonconnect-manifest.json`;
+        const widgetRoot = document.getElementById('tc-widget-root');
+        console.log('[DEBUG] manifestUrl =', manifestUrl);
+        console.log('[DEBUG] tc-widget-root exists =', !!widgetRoot);
+        console.log('[DEBUG] TonConnectUI type =', typeof TonConnectUI);
 
         _ui = new TonConnectUI({
           manifestUrl,
@@ -1241,8 +1245,10 @@ const TC = (() => {
           restoreConnection: true,
           widgetRootId: 'tc-widget-root',
         });
+        console.log('[DEBUG] TonConnectUI constructed, _ui =', !!_ui);
 
         _statusUnsub = _ui.onStatusChange((wallet) => {
+          console.log('[DEBUG] onStatusChange fired, wallet =', !!wallet);
           if (wallet) {
             _onWalletConnected(wallet);
           } else {
@@ -1340,23 +1346,23 @@ const TC = (() => {
    * MUST only be called AFTER our own SECURITY.safeConnect() has gated entry.
    */
   async function safeOpenModal(){
+    console.log('[DEBUG] safeOpenModal start, _ui =', !!_ui);
     try {
       await _initIfNeeded();
+      console.log('[DEBUG] _initIfNeeded done, _ui now =', !!_ui);
     } catch (e) {
+      console.error('[DEBUG] _initIfNeeded threw:', e);
       toast('⚠️ wallet SDK failed to load — try refreshing');
       return;
     }
-    if (!_ui) return;
+    if (!_ui) {
+      console.error('[DEBUG] _ui is still null after init');
+      return;
+    }
     try {
-      // Optional: ask the wallet to sign a ton_proof for backend verification.
-      // For v0.2 launch you can skip this if you don't have the backend yet.
-      // Uncomment when /generate-payload is deployed:
-      //
-      //   const resp = await fetch('/api/generate-payload', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
-      //   const { payload } = await resp.json();
-      //   _ui.setConnectRequestParameters({ state: 'ready', value: { tonProof: payload } });
-
+      console.log('[DEBUG] calling _ui.openModal()');
       await _ui.openModal();
+      console.log('[DEBUG] _ui.openModal() returned');
     } catch (e) {
       console.error('[TC] openModal failed:', e);
       toast('⚠️ couldn\'t open wallet picker');
@@ -2108,17 +2114,23 @@ const SECURITY = {
    * The wrapper around any "connect wallet" trigger.
    */
   async safeConnect(actualConnectFn){
+    console.log('[DEBUG] safeConnect start');
     if (this.isSessionExpired()) {
+      console.log('[DEBUG] session expired, clearing');
       this.clearSession();
     }
     if (this.hasVerifiedThisSession()) {
+      console.log('[DEBUG] already verified, skipping modal, calling actualConnectFn');
       return actualConnectFn();
     }
+    console.log('[DEBUG] showing verification modal');
     const confirmed = await this.showVerificationModal();
+    console.log('[DEBUG] verification modal closed, confirmed =', confirmed);
     if (!confirmed) {
       toast('connect cancelled — stay safe out there 🛡️');
       return;
     }
+    console.log('[DEBUG] calling actualConnectFn after verification');
     return actualConnectFn();
   },
 };
