@@ -40,7 +40,7 @@ The vulnerable `elliptic` / `browserify-sign` / `create-ecdh` paths are dead cod
 ### What we did instead
 
 1. **Pinned versions** in `package.json` — no surprise upgrades that could introduce new advisories
-2. **Tightened CSP** — `script-src` only allows our own origin + unpkg for the TON Connect SDK; no `unsafe-eval`
+2. **CSP hardening** — `script-src` allows `'self' 'unsafe-inline' https://telegram.org`. The `'unsafe-inline'` is required because the gifts codebase uses inline `onclick="..."` handlers; migration to `addEventListener` is future work. XSS protection currently comes from strict use of `textContent` (never `innerHTML`) when building DOM from user/external data, not from CSP. `'unsafe-eval'` is not allowed.
 3. **Added input validation** at every entry point — see `src/ton/swap.js` `composeBuy/composeSell` validators
 4. **Wrote 50 real tests** covering swap composition, slippage math, BOC construction, and TEP-467 hash normalization — see `tests/swap.test.mjs`
 5. **Verified the swap message format** with a boot-time BOC self-test that compares our hand-built swap body to what the DeDust SDK would produce, byte-for-byte
