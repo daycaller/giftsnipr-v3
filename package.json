@@ -1,0 +1,28 @@
+{
+  "name": "giftsnipr",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "description": "GiftSnipr — snipe Telegram Gift NFTs and TON memecoins under floor",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "test": "node tests/swap.test.mjs",
+    "audit": "npm audit --audit-level=moderate",
+    "verify": "npm run test && npm run build && npm audit --audit-level=high",
+    "lint": "echo 'No linter configured — see SECURITY.md for the rationale'"
+  },
+  "dependencies": {
+    "@dedust/sdk": "0.8.7",
+    "@ton/core": "0.59.0",
+    "@ton/crypto": "3.3.0",
+    "@ton/ton": "15.1.0",
+    "@tonconnect/ui": "2.0.9",
+    "buffer": "6.0.3"
+  },
+  "devDependencies": {
+    "vite": "5.4.21",
+    "vite-plugin-node-polyfills": "0.22.0"
+  }
+}
