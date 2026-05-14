@@ -34,25 +34,19 @@ let _tonUsdRate = 0;
 let _lastComposedSwap = null;  // cached so we can show the preview
 let _connectedAddress = null;  // wallet address (from gs:wallet-connected event)
 
-// Listen for wallet events from the gifts code (loosely coupled)
+// Listen for wallet events from the gifts code (loosely coupled).
+// The .user-pill elements in both headers are updated by gifts/app.js
+// (single source of truth — see querySelectorAll in _onWalletConnected),
+// so all we need to do here is re-render the coin detail's risk banner
+// since BUY button state depends on the wallet being connected.
 window.addEventListener('gs:wallet-connected', (e) => {
   _connectedAddress = e.detail?.address || null;
-  updateWalletHint();
-  // If we're on a coin detail page, re-evaluate buy/sell button state
   if (_currentCoin) renderRiskBanner(_currentCoin);
 });
 window.addEventListener('gs:wallet-disconnected', () => {
   _connectedAddress = null;
-  updateWalletHint();
   if (_currentCoin) renderRiskBanner(_currentCoin);
 });
-
-function updateWalletHint() {
-  const hint = document.getElementById('coinsWalletHint');
-  if (!hint) return;
-  const hasWallet = window.GS_BRIDGE ? !!window.GS_BRIDGE.getAddress() : false;
-  hint.style.display = hasWallet ? 'none' : 'flex';
-}
 
 // ---- Boot ----------------------------------------------------------------
 
@@ -119,18 +113,6 @@ function setupEvents() {
       renderList();
     });
   }
-
-  // Wallet-hint connect button
-  const hintBtn = document.getElementById('coinsWalletHintBtn');
-  if (hintBtn) {
-    hintBtn.addEventListener('click', () => {
-      if (window.GS_BRIDGE && window.GS_BRIDGE.openWallet) {
-        window.GS_BRIDGE.openWallet();
-      }
-    });
-  }
-  // Show banner initially if no wallet
-  updateWalletHint();
 
   // Debounce search so we don't blow our 30/min budget on every keystroke
   const search = document.getElementById('searchInput');

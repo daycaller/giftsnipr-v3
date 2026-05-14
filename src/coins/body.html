@@ -27,6 +27,9 @@
     </div>
     </div>
     <div class="spacer"></div>
+    <button class="user-pill" id="coinsUserPill" onclick="handlePillClick()">
+      <span>CONNECT</span>
+    </button>
     <button class="gear-btn" onclick="openSlippage()" aria-label="Slippage settings">⚙</button>
   </header>
 
@@ -41,13 +44,6 @@
 
   <div class="search-row">
     <input class="search-input" id="searchInput" placeholder="🔍  Search ticker, name, or paste contract…" />
-  </div>
-
-  <!-- Connect-wallet banner — only shown when no wallet is connected -->
-  <div id="coinsWalletHint" class="coins-wallet-hint" style="display:none">
-    <span>🔌</span>
-    <span><b>Connect a wallet</b> to trade. Browsing only without one.</span>
-    <button id="coinsWalletHintBtn">CONNECT</button>
   </div>
 
   <div class="coin-list" id="coinList"></div>
